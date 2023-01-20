@@ -22,6 +22,7 @@ protected:
 	void MoveRight(float Value);
 	void LookUp(float Value);
 	void Turn(float Value);
+	void EKeyPressed();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Hair)
 	class UGroomComponent* Hair;
@@ -35,4 +36,10 @@ private:
 	
 	UPROPERTY(VisibleAnywhere)
 	class UCameraComponent* ViewCamera;
+
+	UPROPERTY(VisibleInstanceOnly)
+	class AItem* OverlappingItem;
+
+public:
+	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }
 };
