@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "CharacterTypes.h"
 #include "RPGCharacter.generated.h"
 
 UCLASS()
@@ -31,6 +32,8 @@ protected:
 	UGroomComponent* Eyebrows;
 
 private:
+	ECharacterState CharacterState = ECharacterState::ECS_Unequipped;
+
 	UPROPERTY(VisibleAnywhere)
 	class USpringArmComponent* CameraBoom;
 	
@@ -42,4 +45,5 @@ private:
 
 public:
 	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }
+	FORCEINLINE ECharacterState GetCharacterState() const { return CharacterState; }
 };

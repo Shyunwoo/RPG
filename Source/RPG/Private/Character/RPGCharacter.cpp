@@ -112,6 +112,7 @@ void ARPGCharacter::EKeyPressed()
 		if (OverlappingWeapon)
 		{
 			OverlappingWeapon->Equip(GetMesh(), FName("RightHandSocket"));
+			CharacterState = ECharacterState::ECS_EquippedOneHandWeapon;
 		}
 	}
 }
