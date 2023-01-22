@@ -8,6 +8,7 @@
 #include "GroomComponent.h"
 #include "Items/Item.h"
 #include "Items/Weapons/Weapon.h"
+#include "Animation/AnimMontage.h"
 
 ARPGCharacter::ARPGCharacter()
 {
@@ -63,11 +64,14 @@ void ARPGCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 		PlayerInputComponent->BindAction(FName("Jump"), IE_Pressed, this, &ACharacter::Jump);
 		PlayerInputComponent->BindAction(FName("Equip"), IE_Pressed, this, &ARPGCharacter::EKeyPressed);
+		PlayerInputComponent->BindAction(FName("Attack"), IE_Pressed, this, &ARPGCharacter::Attack);
 	}
 }
 
 void ARPGCharacter::MoveForward(float Value)
 {
+	if (ActionState != EActionState::EAS_Unoccupied) return;
+
 	if (Controller && (Value != 0.f))
 	{
 		const FRotator ControlRotation = GetControlRotation();
@@ -79,6 +83,8 @@ void ARPGCharacter::MoveForward(float Value)
 
 void ARPGCharacter::MoveRight(float Value)
 {
+	if (ActionState != EActionState::EAS_Unoccupied) return;
+
 	if (Controller && (Value != 0.f))
 	{
 		const FRotator ControlRotation = GetControlRotation();
@@ -106,13 +112,125 @@ void ARPGCharacter::Turn(float Value)
 
 void ARPGCharacter::EKeyPressed()
 {
-	if (OverlappingItem != nullptr)
+	if (Controller)
 	{
 		AWeapon* OverlappingWeapon = Cast<AWeapon>(OverlappingItem);
 		if (OverlappingWeapon)
 		{
 			OverlappingWeapon->Equip(GetMesh(), FName("RightHandSocket"));
 			CharacterState = ECharacterState::ECS_EquippedOneHandWeapon;
+			OverlappingItem = nullptr;
+			EquippedWeapon = OverlappingWeapon;
+		}
+		else
+		{
+			if (CasDisarm())
+			{
+				PlayEquipMontage(FName("Unequip"));
+				CharacterState = ECharacterState::ECS_Unequipped;
+				ActionState = EActionState::EAS_EquippingWeapon;
+			}
+			else if(CanArm())
+			{
+				PlayEquipMontage(FName("Equip"));
+				CharacterState = ECharacterState::ECS_EquippedOneHandWeapon;
+				ActionState = EActionState::EAS_EquippingWeapon;
+			}
 		}
 	}
+}
+
+void ARPGCharacter::PlayEquipMontage(FName SectionName)
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && EquipMontage)
+	{
+		AnimInstance->Montage_Play(EquipMontage);
+		AnimInstance->Montage_JumpToSection(SectionName, EquipMontage);
+	}
+}
+
+void ARPGCharacter::Attack()
+{
+	if (Controller)
+	{
+		if (CanAttack())
+		{
+			PlayAttackMontage();
+			ActionState = EActionState::EAS_Attcking;
+		}
+	}
+}
+
+void ARPGCharacter::PlayAttackMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && AttackMontage)
+	{
+		AnimInstance->Montage_Play(AttackMontage);
+		const int32 Selection = FMath::RandRange(0, 2);
+		FName SectionName = FName();
+
+		switch (Selection)
+		{
+		case 0:
+			SectionName = FName("Attack1");
+			break;
+		case 1:
+			SectionName = FName("Attack2");
+			break;
+		case 2:
+			SectionName = FName("Attack3");
+			break;
+		default:
+			break;
+		}
+
+		AnimInstance->Montage_JumpToSection(SectionName, AttackMontage);
+	}
+}
+
+void ARPGCharacter::AttackEnd()
+{
+	ActionState = EActionState::EAS_Unoccupied;
+}
+
+bool ARPGCharacter::CanAttack()
+{
+	return ActionState == EActionState::EAS_Unoccupied &&
+		CharacterState != ECharacterState::ECS_Unequipped;
+}
+
+bool ARPGCharacter::CasDisarm()
+{
+	return CharacterState != ECharacterState::ECS_Unequipped &&
+		ActionState == EActionState::EAS_Unoccupied;
+}
+
+bool ARPGCharacter::CanArm()
+{
+	return CharacterState == ECharacterState::ECS_Unequipped &&
+		ActionState == EActionState::EAS_Unoccupied &&
+		EquippedWeapon;
+}
+
+void ARPGCharacter::Disarm()
+{
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->AttachMeshToSocket(GetMesh(), FName("SpineSocket"));
+	}
+}
+
+void ARPGCharacter::Arm()
+{
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->AttachMeshToSocket(GetMesh(), FName("RightHandSocket"));
+	}
+}
+
+void ARPGCharacter::FinishEquipping()
+{
+	ActionState = EActionState::EAS_Unoccupied;
 }

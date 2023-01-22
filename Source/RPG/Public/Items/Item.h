@@ -6,6 +6,14 @@
 #include "GameFramework/Actor.h"
 #include "Item.generated.h"
 
+enum class EItemState :uint8
+{
+	EIS_Hovering,
+	EIS_Equipped,
+
+	EIS_MAX
+};
+
 UCLASS()
 class RPG_API AItem : public AActor
 {
@@ -39,11 +47,13 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UStaticMeshComponent* ItemMesh;
 
-private:	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	float RunningTime = 0.f;
+	EItemState ItemState = EItemState::EIS_Hovering;
 
 	UPROPERTY(VisibleAnywhere)
 	class USphereComponent* Sphere;
+
+private:	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	float RunningTime = 0.f;
 
 };

@@ -24,6 +24,27 @@ protected:
 	void LookUp(float Value);
 	void Turn(float Value);
 	void EKeyPressed();
+	void Attack();
+
+	//Play montage functions
+	void PlayAttackMontage();
+	void PlayEquipMontage(FName SectionName);
+
+	UFUNCTION(BlueprintCallable)
+	void AttackEnd();
+
+	UFUNCTION(BlueprintCallable)
+	void Disarm();
+
+	UFUNCTION(BlueprintCallable)
+	void Arm();
+
+	UFUNCTION(BlueprintCallable)
+	void FinishEquipping();
+
+	bool CanAttack();
+	bool CasDisarm();
+	bool CanArm();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Hair)
 	class UGroomComponent* Hair;
@@ -32,7 +53,11 @@ protected:
 	UGroomComponent* Eyebrows;
 
 private:
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	ECharacterState CharacterState = ECharacterState::ECS_Unequipped;
+
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	EActionState ActionState = EActionState::EAS_Unoccupied;
 
 	UPROPERTY(VisibleAnywhere)
 	class USpringArmComponent* CameraBoom;
@@ -42,6 +67,16 @@ private:
 
 	UPROPERTY(VisibleInstanceOnly)
 	class AItem* OverlappingItem;
+
+	UPROPERTY(VisibleAnywhere, Category = Weapon)
+	class AWeapon* EquippedWeapon;
+
+	//Animation montages
+	UPROPERTY(EditDefaultsOnly, Category = Montages)
+	class UAnimMontage* AttackMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = Montages)
+	UAnimMontage* EquipMontage;
 
 public:
 	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }
