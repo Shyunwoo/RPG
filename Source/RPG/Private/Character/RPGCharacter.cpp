@@ -9,6 +9,7 @@
 #include "Items/Item.h"
 #include "Items/Weapons/Weapon.h"
 #include "Animation/AnimMontage.h"
+#include "Components/BoxComponent.h"
 
 ARPGCharacter::ARPGCharacter()
 {
@@ -65,6 +66,14 @@ void ARPGCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		PlayerInputComponent->BindAction(FName("Jump"), IE_Pressed, this, &ACharacter::Jump);
 		PlayerInputComponent->BindAction(FName("Equip"), IE_Pressed, this, &ARPGCharacter::EKeyPressed);
 		PlayerInputComponent->BindAction(FName("Attack"), IE_Pressed, this, &ARPGCharacter::Attack);
+	}
+}
+
+void ARPGCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnabled)
+{
+	if (EquippedWeapon && EquippedWeapon->GetWeaponBox())
+	{
+		EquippedWeapon->GetWeaponBox()->SetCollisionEnabled(CollisionEnabled);
 	}
 }
 
