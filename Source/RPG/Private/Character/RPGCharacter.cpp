@@ -74,6 +74,7 @@ void ARPGCharacter::SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionE
 	if (EquippedWeapon && EquippedWeapon->GetWeaponBox())
 	{
 		EquippedWeapon->GetWeaponBox()->SetCollisionEnabled(CollisionEnabled);
+		EquippedWeapon->IgnoreActors.Empty();
 	}
 }
 

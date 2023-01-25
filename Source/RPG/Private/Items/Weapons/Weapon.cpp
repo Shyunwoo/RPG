@@ -8,6 +8,7 @@
 #include "Components/BoxComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Interfaces/HitInterface.h"
+#include "NiagaraComponent.h"
 
 AWeapon::AWeapon()
 {
@@ -40,6 +41,11 @@ void AWeapon::Equip(USceneComponent* InParent, FName InSocketName)
 		UGameplayStatics::PlaySoundAtLocation(this, EquipSound, GetActorLocation());
 	}
 	DisableSphereCollision();
+
+	if (EmbersEffect)
+	{
+		EmbersEffect->Deactivate();
+	}
 }
 
 void AWeapon::AttachMeshToSocket(USceneComponent* InParent, const FName& InSocketName)
@@ -66,6 +72,12 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 		const FVector EndLocation = BoxTraceEnd->GetComponentLocation();
 		TArray<AActor*> ActorsToIgnore;
 		ActorsToIgnore.Add(this);
+
+		for (AActor* Actor : IgnoreActors)
+		{
+			ActorsToIgnore.AddUnique(Actor);
+		}
+
 		FHitResult BoxHit;
 
 		UKismetSystemLibrary::BoxTraceSingle(
@@ -77,7 +89,7 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 			ETraceTypeQuery::TraceTypeQuery1,
 			false,
 			ActorsToIgnore,
-			EDrawDebugTrace::ForDuration,
+			EDrawDebugTrace::None,
 			BoxHit,
 			true
 		);
@@ -87,8 +99,11 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 			IHitInterface* HitInterface = Cast<IHitInterface>(BoxHit.GetActor());
 			if (HitInterface)
 			{
-				HitInterface->GetHit(BoxHit.ImpactPoint);
+				HitInterface->Execute_GetHit(BoxHit.GetActor(), BoxHit.ImpactPoint);
 			}
+			IgnoreActors.AddUnique(BoxHit.GetActor());
+
+			CreateFields(BoxHit.ImpactPoint);
 		}
 	}
 }

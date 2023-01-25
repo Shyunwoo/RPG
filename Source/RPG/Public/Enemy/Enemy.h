@@ -16,7 +16,9 @@ public:
 	AEnemy();
 	virtual void Tick(float DeltaTime) override;
 
-	virtual void GetHit(const FVector& ImpactPoint) override;
+	virtual void GetHit_Implementation(const FVector& ImpactPoint) override;
+
+	void DirectionalHitReact(const FVector& ImpactPoint);
 
 protected:
 	virtual void BeginPlay() override;
@@ -29,4 +31,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = Montages)
 	class UAnimMontage* HitReactMontage;
 
+	UPROPERTY(EditAnywhere, Category = Sounds)
+	class USoundBase* HitSound;
+
+	UPROPERTY(EditAnywhere, Category = VisualEffects)
+	class UParticleSystem* HitParticles;
 };

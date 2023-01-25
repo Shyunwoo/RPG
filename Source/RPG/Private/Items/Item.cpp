@@ -5,6 +5,7 @@
 #include "RPG/DebugMacros.h"
 #include "Components/SphereComponent.h"
 #include "Character/RPGCharacter.h"
+#include "NiagaraComponent.h"
 
 AItem::AItem()
 {
@@ -16,6 +17,9 @@ AItem::AItem()
 	Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
 	Sphere->SetupAttachment(GetRootComponent());
 	Sphere->SetSphereRadius(70.f);
+
+	EmbersEffect = CreateDefaultSubobject<UNiagaraComponent>("Embers");
+	EmbersEffect->SetupAttachment(GetRootComponent());
 }
 
 void AItem::BeginPlay()
