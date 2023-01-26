@@ -44,6 +44,7 @@ void ARPGCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	Tags.Add(FName("RPGCharacter"));
 }
 
 void ARPGCharacter::Tick(float DeltaTime)
@@ -127,7 +128,8 @@ void ARPGCharacter::EKeyPressed()
 		AWeapon* OverlappingWeapon = Cast<AWeapon>(OverlappingItem);
 		if (OverlappingWeapon)
 		{
-			OverlappingWeapon->Equip(GetMesh(), FName("RightHandSocket"));
+			OverlappingWeapon->Equip(GetMesh(), FName("RightHandSocket"), this, this);
+
 			CharacterState = ECharacterState::ECS_EquippedOneHandWeapon;
 			OverlappingItem = nullptr;
 			EquippedWeapon = OverlappingWeapon;
