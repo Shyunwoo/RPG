@@ -7,7 +7,7 @@ enum class ECharacterState : uint8
 	ECS_EquippedOneHandWeapon UMETA(DisplayName = "Equipped One-Handed Weapon"),
 	ECS_EquippedTwoHandedWeapon UMETA(DisplayName = "Equipped Two-Handed Weapon"),
 
-	ECS_MAX UMETA(DisplayName = "MAXCharacterState")
+	ECS_MAX UMETA(DisplayName = "DefaultMax")
 };
 
 UENUM(BlueprintType)
@@ -17,13 +17,12 @@ enum class EActionState : uint8
 	EAS_Attcking UMETA(DisplayName = "Attacking"),
 	EAS_EquippingWeapon UMETA(DisplayName = "EquippingWeapon"),
 
-	EAS_MAX UMETA(DisplayName = "MAXActionState")
+	EAS_MAX UMETA(DisplayName = "DefaultMax")
 };
 
 UENUM(BlueprintType)
-enum class EDeathPose : uint8
+enum EDeathPose
 {
-	EDP_Alive UMETA(DisplayName = "Alive"),
 	EDP_Death1 UMETA(DisplayName = "Death1"),
 	EDP_Death2 UMETA(DisplayName = "Death2"),
 	EDP_Death3 UMETA(DisplayName = "Death3"),
@@ -31,15 +30,18 @@ enum class EDeathPose : uint8
 	EDP_Death5 UMETA(DisplayName = "Death5"),
 	EDP_Death6 UMETA(DisplayName = "Death6"),
 
-	EDP_MAX UMETA(DisplayName = "MAXDeathPos")
+	EDP_MAX UMETA(DisplayName = "DefaultMax")
 };
 
 UENUM(BlueprintType)
 enum class EEnemyState : uint8
 {
+	EES_Dead UMETA(DisplayName = "Dead"),
 	EES_Patrolling UMETA(DisplayName = "Patrolling"),
 	EES_Chasing UMETA(DisplayName = "Chasing"),
 	EES_Attacking UMETA(DisplayName = "Attacking"),
+	EES_Engaged UMETA(DisplayName = "Engaged"),
+	EES_NoState UMETA(DisplayName = "NoState"),
 
-	EES_MAX UMETA(DisplayName = "MAXEnemyState")
+	EES_MAX UMETA(DisplayName = "DefaultMax")
 };

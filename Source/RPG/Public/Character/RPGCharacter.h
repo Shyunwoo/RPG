@@ -3,22 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
+#include "BaseCharacter.h"
 #include "CharacterTypes.h"
 #include "RPGCharacter.generated.h"
 
 UCLASS()
-class RPG_API ARPGCharacter : public ACharacter
+class RPG_API ARPGCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
 
 public:
 	ARPGCharacter();
-	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	UFUNCTION(BlueprintCallable)
-	void SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnabled);
 
 protected:
 	virtual void BeginPlay() override;
@@ -27,27 +23,26 @@ protected:
 	void LookUp(float Value);
 	void Turn(float Value);
 	void EKeyPressed();
-	void Attack();
+	virtual void Attack() override;
 
-	//Play montage functions
-	void PlayAttackMontage();
+	//Combat
+	void EquipWeapon(AWeapon* Weapon);
+	virtual bool CanAttack() override;
+	virtual void AttackEnd() override;
+	bool CasDisarm();
+	bool CanArm();
+	void DisArm();
+	void Arm();
 	void PlayEquipMontage(FName SectionName);
 
 	UFUNCTION(BlueprintCallable)
-	void AttackEnd();
+	void AttachWeaponToBack();
 
 	UFUNCTION(BlueprintCallable)
-	void Disarm();
-
-	UFUNCTION(BlueprintCallable)
-	void Arm();
+	void AttachWeaponToHand();
 
 	UFUNCTION(BlueprintCallable)
 	void FinishEquipping();
-
-	bool CanAttack();
-	bool CasDisarm();
-	bool CanArm();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Hair)
 	class UGroomComponent* Hair;
@@ -62,6 +57,7 @@ private:
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	EActionState ActionState = EActionState::EAS_Unoccupied;
 
+	//Components
 	UPROPERTY(VisibleAnywhere)
 	class USpringArmComponent* CameraBoom;
 	
@@ -70,13 +66,6 @@ private:
 
 	UPROPERTY(VisibleInstanceOnly)
 	class AItem* OverlappingItem;
-
-	UPROPERTY(VisibleAnywhere, Category = Weapon)
-	class AWeapon* EquippedWeapon;
-
-	//Animation montages
-	UPROPERTY(EditDefaultsOnly, Category = Montages)
-	class UAnimMontage* AttackMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category = Montages)
 	UAnimMontage* EquipMontage;
