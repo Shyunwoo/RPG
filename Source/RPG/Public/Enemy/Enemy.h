@@ -21,7 +21,7 @@ public:
 	virtual void Destroyed() override;
 
 	//IHitInterface
-	virtual void GetHit_Implementation(const FVector& ImpactPoint) override;
+	virtual void GetHit_Implementation(const FVector& ImpactPoint, AActor* Hitter) override;
 
 protected:
 	//AActor
@@ -79,9 +79,6 @@ private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AWeapon> WeaponClass;
 
-	UPROPERTY()
-	AActor* CombatTarget;
-
 	UPROPERTY(EditAnywhere)
 	double CombatRadius = 1000.f;
 
@@ -115,10 +112,10 @@ private:
 	FTimerHandle AttackTimer;
 
 	UPROPERTY(EditAnywhere, Category = Combat)
-	float AttackMinTime = 0.5f;
+	float AttackMinTime = 0.1f;
 
 	UPROPERTY(EditAnywhere, Category = Combat)
-	float AttackMaxTime = 1.0f;
+	float AttackMaxTime = 0.4f;
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	float ChasingSpeed = 300.f;
