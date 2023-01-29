@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Interfaces/HitInterface.h"
+#include "Character/CharacterTypes.h"
 #include "BaseCharacter.generated.h"
 
 UCLASS()
@@ -18,9 +19,9 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void GetHit_Implementation(const FVector& ImpactPoint, AActor* Hitter) override;
 
-	//Attack fuctions
+	//Combat fuctions
+	virtual void GetHit_Implementation(const FVector& ImpactPoint, AActor* Hitter) override;
 	virtual void Attack();
 	virtual void Die();
 	void DirectionalHitReact(const FVector& ImpactPoint);
@@ -30,6 +31,7 @@ protected:
 	void DisableCapsule();
 	virtual bool CanAttack();
 	bool IsAlive();
+	void DisableMeshCollision();
 
 	//Play montage functions
 	void PlayHitReactMontage(const FName& SectionName);
@@ -60,6 +62,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	double WarpTargetDistance = 75.f;
+
+	UPROPERTY(BlueprintReadOnly)
+	TEnumAsByte<EDeathPose> DeathPose;
 	
 private:	
 	void PlayMontageSection(class UAnimMontage* Montage, const FName& SectionName);
@@ -87,4 +92,6 @@ private:
 	UPROPERTY(EditAnywhere, Category = VisualEffects)
 	class UParticleSystem* HitParticles;
 
+public:
+	FORCEINLINE TEnumAsByte<EDeathPose> GetDeathPose() const {return DeathPose; }
 };

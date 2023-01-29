@@ -14,12 +14,15 @@ class RPG_API ARPGCharacter : public ABaseCharacter
 
 public:
 	ARPGCharacter();
+	virtual void Jump() override;
+	bool IsUnoccupied();
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void GetHit_Implementation(const FVector& ImpactPoint, AActor* Hitter) override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 protected:
 	virtual void BeginPlay() override;
+	
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 	void LookUp(float Value);
@@ -36,6 +39,7 @@ protected:
 	void DisArm();
 	void Arm();
 	void PlayEquipMontage(FName SectionName);
+	virtual void Die() override;
 
 	UFUNCTION(BlueprintCallable)
 	void AttachWeaponToBack();
@@ -56,6 +60,9 @@ protected:
 	UGroomComponent* Eyebrows;
 
 private:
+	void InitializeRPGOverlay();
+	void SetHUDHealth();
+
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	ECharacterState CharacterState = ECharacterState::ECS_Unequipped;
 
@@ -75,7 +82,11 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = Montages)
 	UAnimMontage* EquipMontage;
 
+	UPROPERTY()
+	class URPGOverlay* RPGOverlay;
+
 public:
 	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }
 	FORCEINLINE ECharacterState GetCharacterState() const { return CharacterState; }
+	FORCEINLINE EActionState GetActionState() const { return ActionState; }
 };

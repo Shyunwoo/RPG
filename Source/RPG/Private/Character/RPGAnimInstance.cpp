@@ -27,5 +27,7 @@ void URPGAnimInstance::NativeUpdateAnimation(float DeltaTime)
 		bIsFalling = RPGCharacterMovement->IsFalling();
 
 		CharacterState = RPGCharacter->GetCharacterState();
+		ActionState = RPGCharacter->GetActionState();
+		DeathPose = RPGCharacter->GetDeathPose();
 	}
 }

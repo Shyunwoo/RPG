@@ -10,6 +10,9 @@
 #include "Items/Weapons/Weapon.h"
 #include "Animation/AnimMontage.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/AttributeComponent.h"
+#include "HUD/RPGHUD.h"
+#include "HUD/RPGOverlay.h"
 
 ARPGCharacter::ARPGCharacter()
 {
@@ -51,6 +54,40 @@ void ARPGCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	Tags.Add(FName("EngageableTarget"));
+	InitializeRPGOverlay();
+}
+
+void ARPGCharacter::InitializeRPGOverlay()
+{
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController)
+	{
+		ARPGHUD* RPGHUD = Cast<ARPGHUD>(PlayerController->GetHUD());
+		if (RPGHUD)
+		{
+			RPGOverlay = RPGHUD->GetRPGOverlay();
+			if (RPGOverlay && Attributes)
+			{
+				RPGOverlay->SetHealthBarPercnet(Attributes->GetHealthPercent());
+				RPGOverlay->SetStaminaBarPercnet(1.f);
+				RPGOverlay->SetGold(0);
+				RPGOverlay->SetSouls(0);
+			}
+		}
+	}
+}
+
+void ARPGCharacter::Jump()
+{
+	if (IsUnoccupied())
+	{
+		Super::Jump();
+	}
+}
+
+bool ARPGCharacter::IsUnoccupied()
+{
+	return ActionState == EActionState::EAS_Unoccupied;
 }
 
 void ARPGCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -64,7 +101,7 @@ void ARPGCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		PlayerInputComponent->BindAxis(FName("LookUp"), this, &ARPGCharacter::LookUp);
 		PlayerInputComponent->BindAxis(FName("Turn"), this, &ARPGCharacter::Turn);
 
-		PlayerInputComponent->BindAction(FName("Jump"), IE_Pressed, this, &ACharacter::Jump);
+		PlayerInputComponent->BindAction(FName("Jump"), IE_Pressed, this, &ARPGCharacter::Jump);
 		PlayerInputComponent->BindAction(FName("Equip"), IE_Pressed, this, &ARPGCharacter::EKeyPressed);
 		PlayerInputComponent->BindAction(FName("Attack"), IE_Pressed, this, &ARPGCharacter::Attack);
 	}
@@ -75,18 +112,30 @@ void ARPGCharacter::GetHit_Implementation(const FVector& ImpactPoint, AActor* Hi
 	Super::GetHit_Implementation(ImpactPoint, Hitter);
 
 	SetWeaponCollisionEnabled(ECollisionEnabled::NoCollision);
-	ActionState = EActionState::EAS_HitReaction;
+	if (Attributes && Attributes->GetHealthPercent() > 0.f)
+	{
+		ActionState = EActionState::EAS_HitReaction;
+	}
 }
 
 float ARPGCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	HandleDamage(DamageAmount);
+	SetHUDHealth();
 	return DamageAmount;
+}
+
+void ARPGCharacter::SetHUDHealth()
+{
+	if (RPGOverlay && Attributes)
+	{
+		RPGOverlay->SetHealthBarPercnet(Attributes->GetHealthPercent());
+	}
 }
 
 void ARPGCharacter::MoveForward(float Value)
 {
-	if (ActionState != EActionState::EAS_Unoccupied) return;
+	if (!IsUnoccupied()) return;
 
 	if (Controller && (Value != 0.f))
 	{
@@ -99,7 +148,7 @@ void ARPGCharacter::MoveForward(float Value)
 
 void ARPGCharacter::MoveRight(float Value)
 {
-	if (ActionState != EActionState::EAS_Unoccupied) return;
+	if (!IsUnoccupied()) return;
 
 	if (Controller && (Value != 0.f))
 	{
@@ -157,6 +206,14 @@ void ARPGCharacter::PlayEquipMontage(FName SectionName)
 		AnimInstance->Montage_Play(EquipMontage);
 		AnimInstance->Montage_JumpToSection(SectionName, EquipMontage);
 	}
+}
+
+void ARPGCharacter::Die()
+{
+	Super::Die();
+
+	ActionState = EActionState::EAS_Dead;
+	DisableMeshCollision();
 }
 
 void ARPGCharacter::Attack()
