@@ -5,20 +5,27 @@
 #include "CoreMinimal.h"
 #include "BaseCharacter.h"
 #include "CharacterTypes.h"
+#include "Interfaces/PickupInterface.h"
 #include "RPGCharacter.generated.h"
 
 UCLASS()
-class RPG_API ARPGCharacter : public ABaseCharacter
+class RPG_API ARPGCharacter : public ABaseCharacter, public IPickupInterface
 {
 	GENERATED_BODY()
 
 public:
 	ARPGCharacter();
+	virtual void Tick(float DeltaTime) override;
+
 	virtual void Jump() override;
 	bool IsUnoccupied();
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void GetHit_Implementation(const FVector& ImpactPoint, AActor* Hitter) override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
+	virtual void SetOverlappingItem(class AItem* Item) override;
+	virtual void AddSouls(class ASoul* Soul) override;
+	virtual void AddGold(class ATresure* Gold) override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -29,17 +36,21 @@ protected:
 	void Turn(float Value);
 	void EKeyPressed();
 	virtual void Attack() override;
+	void Dodge();
 
 	//Combat
 	void EquipWeapon(AWeapon* Weapon);
 	virtual bool CanAttack() override;
 	virtual void AttackEnd() override;
+	virtual void DodgeEnd() override;
 	bool CasDisarm();
 	bool CanArm();
 	void DisArm();
 	void Arm();
 	void PlayEquipMontage(FName SectionName);
-	virtual void Die() override;
+	virtual void Die_Implementation() override;
+	bool HasEnoughStamina();
+	bool IsOccupied();
 
 	UFUNCTION(BlueprintCallable)
 	void AttachWeaponToBack();
@@ -86,7 +97,6 @@ private:
 	class URPGOverlay* RPGOverlay;
 
 public:
-	FORCEINLINE void SetOverlappingItem(AItem* Item) { OverlappingItem = Item; }
 	FORCEINLINE ECharacterState GetCharacterState() const { return CharacterState; }
 	FORCEINLINE EActionState GetActionState() const { return ActionState; }
 };

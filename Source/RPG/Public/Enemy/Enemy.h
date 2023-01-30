@@ -28,13 +28,14 @@ protected:
 	virtual void BeginPlay() override;
 
 	//ABaseCharacter
-	virtual void Die() override;
+	virtual void Die_Implementation() override;
+	void SpawnSoul();
 	virtual bool CanAttack() override;
 	virtual void Attack() override;
 	virtual void HandleDamage(float DamageAmount) override;
 	virtual	void AttackEnd() override;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	EEnemyState EnemyState = EEnemyState::EES_Patrolling;
 
 private:
@@ -81,6 +82,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	double AttackRadius = 200.f;
 
+	UPROPERTY(EditAnywhere)
+	double AcceptanceRadius = 50.f;
+
 	UPROPERTY()
 	class AAIController* EnemyController;
 
@@ -118,4 +122,7 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	float DeathLifeSpan = 8.f;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	TSubclassOf<class ASoul> SoulClass;
 };

@@ -45,7 +45,7 @@ void ABaseCharacter::Attack()
 	}
 }
 
-void ABaseCharacter::Die()
+void ABaseCharacter::Die_Implementation()
 {
 	Tags.Add(FName("Dead"));
 	PlayDeathMontage();
@@ -94,6 +94,11 @@ void ABaseCharacter::StopAttackMontage()
 	{
 		AnimInstance->Montage_Stop(0.25f, AttackMontage);
 	}
+}
+
+void ABaseCharacter::PlayDodgeMontage()
+{
+	PlayMontageSection(DodgeMontage, FName("Default"));
 }
 
 FVector ABaseCharacter::GetTranslationWarpTarget()
@@ -218,6 +223,11 @@ void ABaseCharacter::DisableMeshCollision()
 
 void ABaseCharacter::AttackEnd()
 {
+}
+
+void ABaseCharacter::DodgeEnd()
+{
+
 }
 
 void ABaseCharacter::Tick(float DeltaTime)

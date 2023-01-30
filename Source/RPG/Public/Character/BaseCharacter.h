@@ -23,7 +23,10 @@ protected:
 	//Combat fuctions
 	virtual void GetHit_Implementation(const FVector& ImpactPoint, AActor* Hitter) override;
 	virtual void Attack();
-	virtual void Die();
+
+	UFUNCTION(BlueprintNativeEvent)
+	void Die();
+
 	void DirectionalHitReact(const FVector& ImpactPoint);
 	void PlayHitSound(const FVector& ImpactPoint);
 	void SpawnHitParticles(const FVector& ImpactPoint);
@@ -38,6 +41,7 @@ protected:
 	virtual int32 PlayAttackMontage();
 	virtual int32 PlayDeathMontage();
 	void StopAttackMontage();
+	virtual void PlayDodgeMontage();
 
 	UFUNCTION(BlueprintCallable)
 	FVector GetTranslationWarpTarget();
@@ -47,6 +51,9 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	virtual	void AttackEnd();
+
+	UFUNCTION(BlueprintCallable)
+	virtual	void DodgeEnd();
 
 	UFUNCTION(BlueprintCallable)
 	void SetWeaponCollisionEnabled(ECollisionEnabled::Type CollisionEnabled);
@@ -79,6 +86,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = Montages)
 	UAnimMontage* DeathMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = Montages)
+	UAnimMontage* DodgeMontage;
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	TArray<FName> AttackMontageSections;

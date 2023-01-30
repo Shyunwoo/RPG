@@ -13,10 +13,12 @@
 #include "Components/AttributeComponent.h"
 #include "HUD/RPGHUD.h"
 #include "HUD/RPGOverlay.h"
+#include "Items/Soul.h"
+#include "Items/Tresure.h"
 
 ARPGCharacter::ARPGCharacter()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 	bUseControllerRotationPitch = false;
@@ -47,6 +49,17 @@ ARPGCharacter::ARPGCharacter()
 	Eyebrows = CreateDefaultSubobject<UGroomComponent>(TEXT("Eyebrows"));
 	Eyebrows->SetupAttachment(GetMesh());
 	Eyebrows->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::KeepWorld, true), FName("HeadSocket"));
+}
+
+void ARPGCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (Attributes && RPGOverlay)
+	{
+		Attributes->RegenStamina(DeltaTime);
+		RPGOverlay->SetStaminaBarPercnet(Attributes->GetStaminaPercent());
+	}
 }
 
 void ARPGCharacter::BeginPlay()
@@ -104,6 +117,7 @@ void ARPGCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		PlayerInputComponent->BindAction(FName("Jump"), IE_Pressed, this, &ARPGCharacter::Jump);
 		PlayerInputComponent->BindAction(FName("Equip"), IE_Pressed, this, &ARPGCharacter::EKeyPressed);
 		PlayerInputComponent->BindAction(FName("Attack"), IE_Pressed, this, &ARPGCharacter::Attack);
+		PlayerInputComponent->BindAction(FName("Dodge"), IE_Pressed, this, &ARPGCharacter::Dodge);
 	}
 }
 
@@ -123,6 +137,29 @@ float ARPGCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 	HandleDamage(DamageAmount);
 	SetHUDHealth();
 	return DamageAmount;
+}
+
+void ARPGCharacter::SetOverlappingItem(AItem* Item)
+{
+	OverlappingItem = Item;
+}
+
+void ARPGCharacter::AddSouls(ASoul* Soul)
+{
+	if (Attributes && RPGOverlay)
+	{
+		Attributes->AddSouls(Soul->GetSouls());
+		RPGOverlay->SetSouls(Attributes->GetSouls());
+	}
+}
+
+void ARPGCharacter::AddGold(ATresure* Gold)
+{
+	if (Attributes && RPGOverlay)
+	{
+		Attributes->AddGold(Gold->GetGold());
+		RPGOverlay->SetGold(Attributes->GetGold());
+	}
 }
 
 void ARPGCharacter::SetHUDHealth()
@@ -182,6 +219,10 @@ void ARPGCharacter::EKeyPressed()
 		AWeapon* OverlappingWeapon = Cast<AWeapon>(OverlappingItem);
 		if (OverlappingWeapon)
 		{
+			if (EquippedWeapon)
+			{
+				EquippedWeapon->Destroy();
+			}
 			EquipWeapon(OverlappingWeapon);
 		}
 		else
@@ -208,9 +249,9 @@ void ARPGCharacter::PlayEquipMontage(FName SectionName)
 	}
 }
 
-void ARPGCharacter::Die()
+void ARPGCharacter::Die_Implementation()
 {
-	Super::Die();
+	Super::Die_Implementation();
 
 	ActionState = EActionState::EAS_Dead;
 	DisableMeshCollision();
@@ -229,8 +270,37 @@ void ARPGCharacter::Attack()
 	}
 }
 
+void ARPGCharacter::Dodge()
+{
+	if (IsOccupied() || !HasEnoughStamina()) return;
+	
+	PlayDodgeMontage();
+	ActionState = EActionState::EAS_Dodge;
+	if (Attributes && RPGOverlay)
+	{
+		Attributes->UseStamina(Attributes->GetDodgeCost());
+		RPGOverlay->SetStaminaBarPercnet(Attributes->GetStaminaPercent());
+	}
+}
+
+bool ARPGCharacter::HasEnoughStamina()
+{
+	return Attributes && Attributes->GetStamina() > Attributes->GetDodgeCost();
+}
+
+bool ARPGCharacter::IsOccupied()
+{
+	return ActionState != EActionState::EAS_Unoccupied;
+}
+
 void ARPGCharacter::AttackEnd()
 {
+	ActionState = EActionState::EAS_Unoccupied;
+}
+
+void ARPGCharacter::DodgeEnd()
+{
+	Super::DodgeEnd();
 	ActionState = EActionState::EAS_Unoccupied;
 }
 
